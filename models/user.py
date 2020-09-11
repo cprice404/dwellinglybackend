@@ -1,7 +1,10 @@
 import datetime
+import time
+import jwt
 from db import db
 from enum import Enum
 from models.base_model import BaseModel
+from flask import current_app
 
 class RoleEnum(Enum):
     PENDING = 0
@@ -38,6 +41,14 @@ class UserModel(BaseModel):
     def update_last_active(self):
         self.lastActive = datetime.datetime.utcnow()
         db.session.commit()
+
+    def reset_password_token(self):
+        ten_minutes = 600
+        return jwt.encode(
+                {'reset_password': self.id, 'exp': time.time() + ten_minutes},
+                current_app.secret_key,
+                algorithm='HS256'
+            ).decode('utf-8')
 
     def json(self):
         return {
